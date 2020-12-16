@@ -8,7 +8,7 @@
  *
  */
 
-#define FHG_USAC_IN_A2DP
+/*#define FHG_USAC_IN_A2DP*/
 #define FHG_HEAAC_IN_A2DP
 
 #ifdef HAVE_CONFIG_H
