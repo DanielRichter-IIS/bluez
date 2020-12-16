@@ -8,6 +8,9 @@
  *
  */
 
+#define FHG_USAC_IN_A2DP
+#define FHG_HEAAC_IN_A2DP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -109,9 +112,17 @@ static char *codec2str(uint8_t type, uint8_t codec)
 		case 1:
 			return "MPEG-1,2 Audio";
 		case 2:
+#ifdef FHG_HEAAC_IN_A2DP
+			return "MPEG-2,4 AAC, HE-AAC, HE-AACv2";
+#else
 			return "MPEG-2,4 AAC";
+#endif
 		case 4:
 			return "ATRAC family";
+#ifdef FHG_USAC_IN_A2DP
+		case 8:
+			return "MPEG-D USAC";
+#endif
 		case 255:
 			return "non-A2DP";
 		default:
@@ -210,8 +221,13 @@ static void capabilities(int level, struct frame *frm)
 
 		if (cat == 7) {
 			uint8_t type, codec;
+#ifdef FHG_USAC_IN_A2DP
+			uint16_t tmp, vndcodec = 0;
+			uint32_t freq, bitrate, vendor = 0;
+#else
 			uint16_t tmp, freq, vndcodec = 0;
 			uint32_t bitrate, vendor = 0;
+#endif
 			int i;
 
 			type  = p_get_u8(frm);
@@ -339,7 +355,7 @@ static void capabilities(int level, struct frame *frm)
 			case 2:
 				tmp = p_get_u8(frm);
 				p_indent(level + 1, frm);
-				if (tmp & 0x80)
+				if (tmp & 0x80) /* TODO adjust to adapted Octet0 w/o DRC in object types */
 					printf("MPEG-2 AAC LC ");
 				if (tmp & 0x40)
 					printf("MPEG-4 AAC LC ");
@@ -389,6 +405,83 @@ static void capabilities(int level, struct frame *frm)
 				printf("%ubps ", bitrate);
 				printf("%s\n", tmp & 0x80 ? "VBR" : "");
 				break;
+#ifdef FHG_USAC_IN_A2DP
+			case 8:
+				tmp = p_get_u16(frm);
+				p_indent(level + 1, frm);
+				if (tmp >> 14 & 0x02)
+					printf("MPEG-D USAC with MPEG-D DRC ");
+				printf("\n");
+				freq = (tmp << 12) & 0x03fff000;
+				tmp = p_get_u16(frm);
+				freq |= tmp >> 4;
+				p_indent(level + 1, frm);
+				if (freq & 0x02000000)
+					printf("7.35kHz ");
+				if (freq & 0x01000000)
+					printf("8kHz ");
+				if (freq & 0x00800000)
+					printf("8.82kHz ");
+				if (freq & 0x00400000)
+					printf("9.6kHz ");
+				if (freq & 0x00200000)
+					printf("11.025kHz ");
+				if (freq & 0x00100000)
+					printf("11.76kHz ");
+				if (freq & 0x00080000)
+					printf("12kHz ");
+				if (freq & 0x00040000)
+					printf("12.8kHz ");
+				if (freq & 0x00020000)
+					printf("14.7kHz ");
+				if (freq & 0x00010000)
+					printf("16kHz ");
+				if (freq & 0x00008000)
+					printf("17.64kHz ");
+				if (freq & 0x00004000)
+					printf("19.2kHz ");
+				if (freq & 0x00002000)
+					printf("22.05kHz ");
+				if (freq & 0x00001000)
+					printf("24kHz ");
+				if (freq & 0x00000800)
+					printf("29.4kHz ");
+				if (freq & 0x00000400)
+					printf("32kHz ");
+				if (freq & 0x00000200)
+					printf("35.28kHz ");
+				if (freq & 0x00000100)
+					printf("38.4kHz ");
+				if (freq & 0x00000080)
+					printf("44.1kHz ");
+				if (freq & 0x00000040)
+					printf("48kHz ");
+				if (freq & 0x00000020)
+					printf("58.8kHz ");
+				if (freq & 0x00000010)
+					printf("64kHz ");
+				if (freq & 0x00000008)
+					printf("70.56kHz ");
+				if (freq & 0x00000004)
+					printf("76.8kHz ");
+				if (freq & 0x00000002)
+					printf("88.2kHz ");
+				if (freq & 0x00000001)
+					printf("96kHz ");
+				printf("\n");
+				p_indent(level + 1, frm);
+				if (tmp & 0x08)
+					printf("1 ");
+				if (tmp & 0x04)
+					printf("2 ");
+				printf("Channels\n");
+				tmp = p_get_u16(frm);
+				bitrate = ((tmp & 0x007fff00) << 8) | p_get_u8(frm);
+				p_indent(level + 1, frm);
+				printf("%ubps ", bitrate);
+				printf("%s\n", tmp >> 15 ? "VBR" : "");
+				break;
+#endif /* FHG_USAC_IN_A2DP */
 			case 255:
 				if (vendor == 0x0000004f &&
 							vndcodec == 0x0001) {

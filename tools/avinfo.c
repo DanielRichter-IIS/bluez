@@ -347,6 +347,90 @@ static void print_vendor(a2dp_vendor_codec_t *vendor, uint8_t size)
 		print_ldac((void *) vendor, size);
 }
 
+#ifdef FHG_USAC_IN_A2DP
+static void print_mpegd(a2dp_usac_t *usac, uint8_t size)
+{
+	unsigned int freq, bitrate;
+
+	if (size < sizeof(*usac)) {
+		printf("\tMedia Codec: MPEGD\n");
+		return;
+	}
+
+	freq = USAC_GET_FREQUENCY(*usac);
+	bitrate = USAC_GET_BITRATE(*usac);
+
+	printf("\tMedia Codec: MPEGD\n\t\tObject Types: ");
+
+	if (usac->object_type & USAC_OBJECT_TYPE_MPEGD_USAC_WITH_DRC)
+		printf("MPEG-D USAC with MPEG-D DRC ");
+
+	printf("\n\t\tFrequencies: ");
+	if (freq & USAC_SAMPLING_FREQ_7350)
+		printf("7.35kHz ");
+	if (freq & USAC_SAMPLING_FREQ_8000)
+		printf("8kHz ");
+	if (freq & USAC_SAMPLING_FREQ_8820)
+		printf("8.82kHz ");
+	if (freq & USAC_SAMPLING_FREQ_9600)
+		printf("9.6kHz ");
+	if (freq & USAC_SAMPLING_FREQ_11025)
+		printf("11.025kHz ");
+	if (freq & USAC_SAMPLING_FREQ_11760)
+		printf("11.76kHz ");
+  if (freq & USAC_SAMPLING_FREQ_12000)
+		printf("12kHz ");
+	if (freq & USAC_SAMPLING_FREQ_12800)
+		printf("12.8kHz ");
+  if (freq & USAC_SAMPLING_FREQ_14700)
+		printf("14.7kHz ");
+  if (freq & USAC_SAMPLING_FREQ_16000)
+		printf("16kHz ");
+	if (freq & USAC_SAMPLING_FREQ_17640)
+		printf("17.64kHz ");
+  if (freq & USAC_SAMPLING_FREQ_19200)
+		printf("19.2kHz ");
+  if (freq & USAC_SAMPLING_FREQ_22050)
+		printf("22.05kHz ");
+	if (freq & USAC_SAMPLING_FREQ_24000)
+		printf("24kHz ");
+	if (freq & USAC_SAMPLING_FREQ_29400)
+		printf("29.4kHz ");
+  if (freq & USAC_SAMPLING_FREQ_32000)
+		printf("32kHz ");
+	if (freq & USAC_SAMPLING_FREQ_35280)
+		printf("35.28kHz ");
+  if (freq & USAC_SAMPLING_FREQ_38400)
+		printf("38.4kHz ");
+  if (freq & USAC_SAMPLING_FREQ_44100)
+		printf("44.1kHz ");
+	if (freq & USAC_SAMPLING_FREQ_48000)
+		printf("48kHz ");
+	if (freq & USAC_SAMPLING_FREQ_58800)
+		printf("58.8kHz ");
+  if (freq & USAC_SAMPLING_FREQ_64000)
+		printf("64kHz ");
+	if (freq & USAC_SAMPLING_FREQ_70560)
+		printf("70.56kHz ");
+  if (freq & USAC_SAMPLING_FREQ_76800)
+		printf("76.8kHz ");
+  if (freq & USAC_SAMPLING_FREQ_88200)
+		printf("88.2kHz ");
+	if (freq & USAC_SAMPLING_FREQ_96000)
+		printf("96kHz ");
+
+	printf("\n\t\tChannels: ");
+	if (usac->channels & USAC_CHANNELS_1)
+		printf("1 ");
+	if (usac->channels & USAC_CHANNELS_2)
+		printf("2 ");
+
+	printf("\n\t\tBitrate: %u", bitrate);
+
+	printf("\n\t\tVBR: %s", usac->vbr ? "Yes\n" : "No\n");
+}
+#endif /* FHG_USAC_IN_A2DP */
+
 static void print_mpeg24(a2dp_aac_t *aac, uint8_t size)
 {
 	unsigned int freq, bitrate;
@@ -401,6 +485,8 @@ static void print_mpeg24(a2dp_aac_t *aac, uint8_t size)
 		printf("1 ");
 	if (aac->channels & AAC_CHANNELS_2)
 		printf("2 ");
+
+	/* TODO: add missing channel cfgs */
 
 	printf("\n\t\tBitrate: %u", bitrate);
 
@@ -629,6 +715,11 @@ static void print_media_codec(
 	case A2DP_CODEC_MPEG24:
 		print_mpeg24((void *) cap->data, size - 2);
 		break;
+#ifdef FHG_USAC_IN_A2DP
+	case A2DP_CODEC_MPEGD:
+		print_mpegd((void *) cap->data, size - 2);
+		break;
+#endif
 	case A2DP_CODEC_VENDOR:
 		print_vendor((void *) cap->data, size - 2);
 		break;

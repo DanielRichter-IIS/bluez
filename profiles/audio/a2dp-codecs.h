@@ -14,7 +14,7 @@
 #include <stdint.h>
 
 #define FHG_USAC_IN_A2DP
-#define FHG_HEAAC_IN_A2DP
+/*#define FHG_HEAAC_IN_A2DP*/
 
 #define A2DP_CODEC_SBC			0x00
 #define A2DP_CODEC_MPEG12		0x01

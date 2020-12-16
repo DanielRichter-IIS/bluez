@@ -9,6 +9,8 @@
  *
  */
 
+#define FHG_USAC_IN_A2DP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -34,6 +36,9 @@
 #define A2DP_CODEC_MPEG12	0x01
 #define A2DP_CODEC_MPEG24	0x02
 #define A2DP_CODEC_ATRAC	0x04
+#ifdef FHG_USAC_IN_A2DP
+#define A2DP_CODEC_MPEGD	0x08
+#endif
 #define A2DP_CODEC_VENDOR	0xff
 
 /* Vendor Specific A2DP Codecs */
@@ -141,7 +146,7 @@ static const struct bit_desc aac_object_type_table[] = {
 	{  3, "RFA (b3)" },
 	{  2, "RFA (b2)" },
 	{  1, "RFA (b1)" },
-	{  0, "RFA (b0)" },
+	{  0, "RFA (b0)" }, /* TODO: split DRC bit */
 	{ }
 };
 
@@ -164,8 +169,54 @@ static const struct bit_desc aac_frequency_table[] = {
 static const struct bit_desc aac_channels_table[] = {
 	{  3, "1" },
 	{  2, "2" },
+	{ } /* TODO: add multichannel */
+};
+
+#ifdef FHG_USAC_IN_A2DP
+static const struct bit_desc usac_object_type_table[] = {
+	{  7, "MPEG-D USAC with MPEG-D DRC" },
+	{  6, "RFA (b6)" },
 	{ }
 };
+
+static const struct bit_desc usac_frequency_table[] = {
+	{ 29, "7350" },
+	{ 28, "8000" },
+	{ 27, "8820" },
+	{ 26, "9600" },
+	{ 25, "11025" },
+	{ 24, "11760" },
+	{ 23, "12000" },
+	{ 22, "12800" },
+	{ 21, "14700" },
+	{ 20, "16000" },
+	{ 19, "17640" },
+	{ 18, "19200" },
+	{ 17, "22050" },
+	{ 16, "24000" },
+	{ 15, "29400" },
+	{ 14, "32000" },
+	{ 13, "35280" },
+	{ 12, "38400" },
+	{ 11, "44100" },
+	{ 10, "48000" },
+	{  9, "58800" },
+	{  8, "64000" },
+	{  7, "70560" },
+	{  6, "76800" },
+	{  5, "88200" },
+	{  4, "96000" },
+	{ }
+};
+
+static const struct bit_desc usac_channels_table[] = {
+	{  3, "1" },
+	{  2, "2" },
+	{  1, "RFA (b1)" },
+	{  0, "RFA (b0)" },
+	{ }
+};
+#endif /* FHG_USAC_IN_A2DP */
 
 static const struct bit_desc aptx_frequency_table[] = {
 	{  7, "16000" },
@@ -550,6 +601,110 @@ static bool codec_aac_cfg(uint8_t losc, struct l2cap_frame *frame)
 	return true;
 }
 
+#ifdef FHG_USAC_IN_A2DP
+static bool codec_usac_cap(uint8_t losc, struct l2cap_frame *frame)
+{
+	uint16_t cap = 0;
+	uint8_t cap8 = 0;
+	uint8_t type;
+	uint32_t freq;
+	uint8_t chan;
+	uint32_t bitrate;
+	bool vbr;
+
+	if (losc != 7)
+		return false;
+
+	if (!l2cap_frame_get_be16(frame, &cap))
+		return false;
+
+	type = (cap >> 8) & 0x80;
+	freq = (cap << 16) & 0x3fff0000;
+
+	if (!l2cap_frame_get_be16(frame, &cap))
+		return false;
+
+	freq |= cap & 0xfff0;
+	chan = cap & 0x0f;
+
+	if (!l2cap_frame_get_be16(frame, &cap))
+			return false;
+
+	bitrate = (cap << 8) & 0x007fff00;
+	vbr = (cap >> 8) & 0x80;
+
+	if (!l2cap_frame_get_u8(frame, &cap8))
+		return false;
+
+	bitrate |= cap8;
+
+	print_field("%*cObject Type: 0x%02x", BASE_INDENT, ' ', type);
+	print_value_bits(BASE_INDENT, type, usac_object_type_table);
+
+	print_field("%*cFrequency: 0x%02x", BASE_INDENT, ' ', freq);
+	print_value_bits(BASE_INDENT, freq, usac_frequency_table);
+
+	print_field("%*cChannels: 0x%02x", BASE_INDENT, ' ', chan);
+	print_value_bits(BASE_INDENT, chan, usac_channels_table);
+
+	print_field("%*cBitrate: %ubps", BASE_INDENT, ' ', bitrate);
+	print_field("%*cVBR: %s", BASE_INDENT, ' ', vbr ? "Yes" : "No");
+
+	return true;
+}
+
+static bool codec_usac_cfg(uint8_t losc, struct l2cap_frame *frame)
+{
+	uint16_t cap = 0;
+	uint8_t cap8 = 0;
+	uint8_t type;
+	uint32_t freq;
+	uint8_t chan;
+	uint32_t bitrate;
+	bool vbr;
+
+	if (losc != 7)
+		return false;
+
+	if (!l2cap_frame_get_be16(frame, &cap))
+		return false;
+
+	type = (cap >> 8) & 0x80;
+	freq = (cap << 16) & 0x3fff0000;
+
+	if (!l2cap_frame_get_be16(frame, &cap))
+		return false;
+
+	freq |= cap & 0xfff0;
+	chan = cap & 0x0f;
+
+	if (!l2cap_frame_get_be16(frame, &cap))
+			return false;
+
+	bitrate = (cap << 8) & 0x007fff00;
+	vbr = (cap >> 8) & 0x80;
+
+	if (!l2cap_frame_get_u8(frame, &cap8))
+		return false;
+
+	bitrate |= cap8;
+
+	print_field("%*cObject Type: %s (0x%02x)", BASE_INDENT, ' ',
+			find_value_bit(type, usac_object_type_table), type);
+
+	print_field("%*cFrequency: %s (0x%02x)", BASE_INDENT, ' ',
+			find_value_bit(freq, usac_frequency_table), freq);
+
+	print_field("%*cChannels: %s (0x%02x)", BASE_INDENT, ' ',
+			find_value_bit(chan, usac_channels_table), chan);
+
+	print_field("%*cBitrate: %ubps", BASE_INDENT, ' ', bitrate);
+	print_field("%*cVBR: %s", BASE_INDENT, ' ', vbr ? "Yes" : "No");
+
+	return true;
+}
+#endif /* FHG_USAC_IN_A2DP */
+
 static bool codec_vendor_aptx_cap(uint8_t losc, struct l2cap_frame *frame)
 {
 	uint8_t cap = 0;
@@ -885,6 +1040,10 @@ bool a2dp_codec_cap(uint8_t codec, uint8_t losc, struct l2cap_frame *frame)
 		return codec_aac_cap(losc, frame);
 	case A2DP_CODEC_VENDOR:
 		return codec_vendor_cap(losc, frame);
+#ifdef FHG_USAC_IN_A2DP
+	case A2DP_CODEC_MPEGD:
+		return codec_usac_cap(losc, frame);
+#endif
 	default:
 		packet_hexdump(frame->data, losc);
 		l2cap_frame_pull(frame, frame, losc);
@@ -903,6 +1062,10 @@ bool a2dp_codec_cfg(uint8_t codec, uint8_t losc, struct l2cap_frame *frame)
 		return codec_aac_cfg(losc, frame);
 	case A2DP_CODEC_VENDOR:
 		return codec_vendor_cfg(losc, frame);
+#ifdef FHG_USAC_IN_A2DP
+	case A2DP_CODEC_MPEGD:
+		return codec_usac_cfg(losc, frame);
+#endif
 	default:
 		packet_hexdump(frame->data, losc);
 		l2cap_frame_pull(frame, frame, losc);
