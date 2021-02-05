@@ -453,6 +453,12 @@ static void print_mpeg24(a2dp_aac_t *aac, uint8_t size)
 		printf("MPEG-4 AAC LTP ");
 	if (aac->object_type & AAC_OBJECT_TYPE_MPEG4_AAC_SCA)
 		printf("MPEG-4 AAC scalable ");
+#ifdef FHG_HEAAC_IN_A2DP
+	if (aac->object_type & AAC_OBJECT_TYPE_MPEG4_HEAAC)
+		printf("MPEG-4 HE-AAC ");
+	if (aac->object_type & AAC_OBJECT_TYPE_MPEG4_HEAACV2)
+		printf("MPEG-4 HE-AACv2 ");
+#endif
 
 	printf("\n\t\tFrequencies: ");
 	if (freq & AAC_SAMPLING_FREQ_8000)
@@ -485,12 +491,20 @@ static void print_mpeg24(a2dp_aac_t *aac, uint8_t size)
 		printf("1 ");
 	if (aac->channels & AAC_CHANNELS_2)
 		printf("2 ");
-
-	/* TODO: add missing channel cfgs */
+#ifdef FHG_HEAAC_IN_A2DP
+	if (aac->channels & AAC_CHANNELS_6)
+		printf("6 (5.1)");
+	if (aac->channels & AAC_CHANNELS_8)
+		printf("8 (7.1)");
+#endif
 
 	printf("\n\t\tBitrate: %u", bitrate);
 
 	printf("\n\t\tVBR: %s", aac->vbr ? "Yes\n" : "No\n");
+
+#ifdef FHG_HEAAC_IN_A2DP
+	printf("\n\t\tDRC: %s", aac->drc ? "Yes\n" : "No\n");
+#endif
 }
 
 static void print_mpeg12(a2dp_mpeg_t *mpeg, uint8_t size)

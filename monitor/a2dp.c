@@ -10,6 +10,7 @@
  */
 
 #define FHG_USAC_IN_A2DP
+/*#define FHG_HEAAC_IN_A2DP*/
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -143,10 +144,16 @@ static const struct bit_desc aac_object_type_table[] = {
 	{  6, "MPEG-4 AAC LC" },
 	{  5, "MPEG-4 AAC LTP" },
 	{  4, "MPEG-4 AAC scalable" },
+#ifdef FHG_HEAAC_IN_A2DP
+	{  3, "MPEG-4 HE-AAC" },
+	{  2, "MPEG-4 HE-AACv2" },
+	{  1, "RFA (b1)" }, /* TODO: add ELD */
+#else
 	{  3, "RFA (b3)" },
 	{  2, "RFA (b2)" },
 	{  1, "RFA (b1)" },
-	{  0, "RFA (b0)" }, /* TODO: split DRC bit */
+	{  0, "RFA (b0)" },
+#endif
 	{ }
 };
 
@@ -169,6 +176,10 @@ static const struct bit_desc aac_frequency_table[] = {
 static const struct bit_desc aac_channels_table[] = {
 	{  3, "1" },
 	{  2, "2" },
+#ifdef FHG_HEAAC_IN_A2DP
+	{  1, "6 (5.1)" },
+	{  0, "8 (7.1)" },
+#endif
 	{ } /* TODO: add multichannel */
 };
 
@@ -531,7 +542,11 @@ static bool codec_aac_cap(uint8_t losc, struct l2cap_frame *frame)
 		return false;
 
 	freq |= (cap >> 8) & 0xf0;
+#ifdef FHG_HEAAC_IN_A2DP
+	chan = (cap >> 8) & 0x0f;
+#else
 	chan = (cap >> 8) & 0x0c;
+#endif
 	bitrate = (cap << 16) & 0x7f0000;
 	vbr = cap & 0x0080;
 
@@ -577,7 +592,11 @@ static bool codec_aac_cfg(uint8_t losc, struct l2cap_frame *frame)
 		return false;
 
 	freq |= (cap >> 8) & 0xf0;
+#ifdef FHG_HEAAC_IN_A2DP
+	chan = (cap >> 8) & 0x0f;
+#else
 	chan = (cap >> 8) & 0x0c;
+#endif
 	bitrate = (cap << 16) & 0x7f0000;
 	vbr = cap & 0x0080;
 

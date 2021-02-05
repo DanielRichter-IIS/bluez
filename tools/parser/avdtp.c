@@ -363,6 +363,15 @@ static void capabilities(int level, struct frame *frm)
 					printf("MPEG-4 AAC LTP ");
 				if (tmp & 0x10)
 					printf("MPEG-4 AAC scalable ");
+#ifdef FHG_HEAAC_IN_A2DP
+				if (tmp & 0x08)
+					printf("MPEG-4 HE-AAC ");
+				if (tmp & 0x04)
+					printf("MPEG-4 HE-AACv2 ");
+
+				if (tmp & 0x01)
+					printf("%s\n", tmp & 0x01 ? "DRC" : "");
+#endif
 				printf("\n");
 				tmp = p_get_u16(frm);
 				freq = tmp >> 4;
@@ -392,12 +401,24 @@ static void capabilities(int level, struct frame *frm)
 				if (freq & 0x0001)
 					printf("96kHz ");
 				printf("\n");
+#ifdef FHG_HEAAC_IN_A2DP
+				p_indent(level + 1, frm);
+				if (tmp & 0x08)
+					printf("1 ");
+				if (tmp & 0x04)
+					printf("2 ");
+				if (tmp & 0x02)
+					printf("6 (5.1) ");
+				if (tmp & 0x01)
+					printf("8 (7.1) ");
+#else
 				tmp >>= 2;
 				p_indent(level + 1, frm);
 				if (tmp & 0x02)
 					printf("1 ");
 				if (tmp & 0x01)
 					printf("2 ");
+#endif
 				printf("Channels\n");
 				tmp = p_get_u8(frm);
 				bitrate = ((tmp & 0x7f) << 16) | p_get_u16(frm);
