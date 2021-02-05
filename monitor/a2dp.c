@@ -578,14 +578,22 @@ static bool codec_aac_cfg(uint8_t losc, struct l2cap_frame *frame)
 	uint8_t chan;
 	uint32_t bitrate;
 	bool vbr;
+#ifndef FHG_HEAAC_IN_A2DP
+	bool drc;
+#endif
 
 	if (losc != 6)
 		return false;
 
-	if (!l2cap_frame_get_be16(frame, &cap))
+	if (!l2cap_frame_get_be16(frame, &cap))	
 		return false;
 
+#ifndef FHG_HEAAC_IN_A2DP
+	type = (cap >> 8) & 0xfe;
+	drc = (cap >> 8) & 0x01;
+#else
 	type = cap >> 8;
+#endif
 	freq = cap << 8;
 
 	if (!l2cap_frame_get_be16(frame, &cap))
@@ -616,6 +624,9 @@ static bool codec_aac_cfg(uint8_t losc, struct l2cap_frame *frame)
 
 	print_field("%*cBitrate: %ubps", BASE_INDENT, ' ', bitrate);
 	print_field("%*cVBR: %s", BASE_INDENT, ' ', vbr ? "Yes" : "No");
+#ifdef FHG_HEAAC_IN_A2DP
+	print_field("%*cDRC: %s", BASE_INDENT, ' ', drc ? "Yes" : "No");
+#endif
 
 	return true;
 }
