@@ -8,8 +8,6 @@
  *
  */
 
-#define FHG_USAC_IN_A2DP
-/*#define FHG_HEAAC_IN_A2DP*/
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -112,14 +110,14 @@ static char *codec2str(uint8_t type, uint8_t codec)
 		case 1:
 			return "MPEG-1,2 Audio";
 		case 2:
-#ifdef FHG_HEAAC_IN_A2DP
+#if FHG_HEAAC_IN_A2DP
 			return "MPEG-2,4 AAC, HE-AAC, HE-AACv2";
 #else
 			return "MPEG-2,4 AAC";
 #endif
 		case 4:
 			return "ATRAC family";
-#ifdef FHG_USAC_IN_A2DP
+#if FHG_USAC_IN_A2DP
 		case 8:
 			return "MPEG-D USAC";
 #endif
@@ -221,7 +219,7 @@ static void capabilities(int level, struct frame *frm)
 
 		if (cat == 7) {
 			uint8_t type, codec;
-#ifdef FHG_USAC_IN_A2DP
+#if FHG_USAC_IN_A2DP
 			uint16_t tmp, vndcodec = 0;
 			uint32_t freq, bitrate, vendor = 0;
 #else
@@ -363,7 +361,7 @@ static void capabilities(int level, struct frame *frm)
 					printf("MPEG-4 AAC LTP ");
 				if (tmp & 0x10)
 					printf("MPEG-4 AAC scalable ");
-#ifdef FHG_HEAAC_IN_A2DP
+#if FHG_HEAAC_IN_A2DP
 				if (tmp & 0x08)
 					printf("MPEG-4 HE-AAC ");
 				if (tmp & 0x04)
@@ -401,7 +399,7 @@ static void capabilities(int level, struct frame *frm)
 				if (freq & 0x0001)
 					printf("96kHz ");
 				printf("\n");
-#ifdef FHG_HEAAC_IN_A2DP
+#if FHG_HEAAC_IN_A2DP
 				p_indent(level + 1, frm);
 				if (tmp & 0x08)
 					printf("1 ");
@@ -426,7 +424,7 @@ static void capabilities(int level, struct frame *frm)
 				printf("%ubps ", bitrate);
 				printf("%s\n", tmp & 0x80 ? "VBR" : "");
 				break;
-#ifdef FHG_USAC_IN_A2DP
+#if FHG_USAC_IN_A2DP
 			case 8:
 				tmp = p_get_u16(frm);
 				p_indent(level + 1, frm);

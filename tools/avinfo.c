@@ -347,7 +347,7 @@ static void print_vendor(a2dp_vendor_codec_t *vendor, uint8_t size)
 		print_ldac((void *) vendor, size);
 }
 
-#ifdef FHG_USAC_IN_A2DP
+#if FHG_USAC_IN_A2DP
 static void print_mpegd(a2dp_usac_t *usac, uint8_t size)
 {
 	unsigned int freq, bitrate;
@@ -453,7 +453,7 @@ static void print_mpeg24(a2dp_aac_t *aac, uint8_t size)
 		printf("MPEG-4 AAC LTP ");
 	if (aac->object_type & AAC_OBJECT_TYPE_MPEG4_AAC_SCA)
 		printf("MPEG-4 AAC scalable ");
-#ifdef FHG_HEAAC_IN_A2DP
+#if FHG_HEAAC_IN_A2DP
 	if (aac->object_type & AAC_OBJECT_TYPE_MPEG4_HEAAC)
 		printf("MPEG-4 HE-AAC ");
 	if (aac->object_type & AAC_OBJECT_TYPE_MPEG4_HEAACV2)
@@ -491,7 +491,7 @@ static void print_mpeg24(a2dp_aac_t *aac, uint8_t size)
 		printf("1 ");
 	if (aac->channels & AAC_CHANNELS_2)
 		printf("2 ");
-#ifdef FHG_HEAAC_IN_A2DP
+#if FHG_HEAAC_IN_A2DP
 	if (aac->channels & AAC_CHANNELS_6)
 		printf("6 (5.1)");
 	if (aac->channels & AAC_CHANNELS_8)
@@ -502,7 +502,7 @@ static void print_mpeg24(a2dp_aac_t *aac, uint8_t size)
 
 	printf("\n\t\tVBR: %s", aac->vbr ? "Yes\n" : "No\n");
 
-#ifdef FHG_HEAAC_IN_A2DP
+#if FHG_HEAAC_IN_A2DP
 	printf("\n\t\tDRC: %s", aac->drc ? "Yes\n" : "No\n");
 #endif
 }
@@ -729,7 +729,7 @@ static void print_media_codec(
 	case A2DP_CODEC_MPEG24:
 		print_mpeg24((void *) cap->data, size - 2);
 		break;
-#ifdef FHG_USAC_IN_A2DP
+#if FHG_USAC_IN_A2DP
 	case A2DP_CODEC_MPEGD:
 		print_mpegd((void *) cap->data, size - 2);
 		break;

@@ -9,8 +9,6 @@
  *
  */
 
-#define FHG_USAC_IN_A2DP
-/*#define FHG_HEAAC_IN_A2DP*/
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -37,7 +35,7 @@
 #define A2DP_CODEC_MPEG12	0x01
 #define A2DP_CODEC_MPEG24	0x02
 #define A2DP_CODEC_ATRAC	0x04
-#ifdef FHG_USAC_IN_A2DP
+#if FHG_USAC_IN_A2DP
 #define A2DP_CODEC_MPEGD	0x08
 #endif
 #define A2DP_CODEC_VENDOR	0xff
@@ -144,7 +142,7 @@ static const struct bit_desc aac_object_type_table[] = {
 	{  6, "MPEG-4 AAC LC" },
 	{  5, "MPEG-4 AAC LTP" },
 	{  4, "MPEG-4 AAC scalable" },
-#ifdef FHG_HEAAC_IN_A2DP
+#if FHG_HEAAC_IN_A2DP
 	{  3, "MPEG-4 HE-AAC" },
 	{  2, "MPEG-4 HE-AACv2" },
 	{  1, "RFA (b1)" }, /* TODO: add ELD */
@@ -176,14 +174,14 @@ static const struct bit_desc aac_frequency_table[] = {
 static const struct bit_desc aac_channels_table[] = {
 	{  3, "1" },
 	{  2, "2" },
-#ifdef FHG_HEAAC_IN_A2DP
+#if FHG_HEAAC_IN_A2DP
 	{  1, "6 (5.1)" },
 	{  0, "8 (7.1)" },
 #endif
 	{ } /* TODO: add multichannel */
 };
 
-#ifdef FHG_USAC_IN_A2DP
+#if FHG_USAC_IN_A2DP
 static const struct bit_desc usac_object_type_table[] = {
 	{  7, "MPEG-D USAC with MPEG-D DRC" },
 	{  6, "RFA (b6)" },
@@ -528,7 +526,7 @@ static bool codec_aac_cap(uint8_t losc, struct l2cap_frame *frame)
 	uint8_t chan;
 	uint32_t bitrate;
 	bool vbr;
-#ifdef FHG_HEAAC_IN_A2DP
+#if FHG_HEAAC_IN_A2DP
 	bool drc;
 #endif
 
@@ -538,7 +536,7 @@ static bool codec_aac_cap(uint8_t losc, struct l2cap_frame *frame)
 	if (!l2cap_frame_get_be16(frame, &cap))
 		return false;
 
-#ifdef FHG_HEAAC_IN_A2DP
+#if FHG_HEAAC_IN_A2DP
 	type = (cap >> 8) & 0xfe;
 	drc = (cap >> 8) & 0x01;
 #else
@@ -550,7 +548,7 @@ static bool codec_aac_cap(uint8_t losc, struct l2cap_frame *frame)
 		return false;
 
 	freq |= (cap >> 8) & 0xf0;
-#ifdef FHG_HEAAC_IN_A2DP
+#if FHG_HEAAC_IN_A2DP
 	chan = (cap >> 8) & 0x0f;
 #else
 	chan = (cap >> 8) & 0x0c;
@@ -574,7 +572,7 @@ static bool codec_aac_cap(uint8_t losc, struct l2cap_frame *frame)
 
 	print_field("%*cBitrate: %ubps", BASE_INDENT, ' ', bitrate);
 	print_field("%*cVBR: %s", BASE_INDENT, ' ', vbr ? "Yes" : "No");
-#ifdef FHG_HEAAC_IN_A2DP
+#if FHG_HEAAC_IN_A2DP
 	print_field("%*cDRC: %s", BASE_INDENT, ' ', drc ? "Yes" : "No");
 #endif
 
@@ -589,7 +587,7 @@ static bool codec_aac_cfg(uint8_t losc, struct l2cap_frame *frame)
 	uint8_t chan;
 	uint32_t bitrate;
 	bool vbr;
-#ifdef FHG_HEAAC_IN_A2DP
+#if FHG_HEAAC_IN_A2DP
 	bool drc;
 #endif
 
@@ -599,7 +597,7 @@ static bool codec_aac_cfg(uint8_t losc, struct l2cap_frame *frame)
 	if (!l2cap_frame_get_be16(frame, &cap))	
 		return false;
 
-#ifdef FHG_HEAAC_IN_A2DP
+#if FHG_HEAAC_IN_A2DP
 	type = (cap >> 8) & 0xfe;
 	drc = (cap >> 8) & 0x01;
 #else
@@ -611,7 +609,7 @@ static bool codec_aac_cfg(uint8_t losc, struct l2cap_frame *frame)
 		return false;
 
 	freq |= (cap >> 8) & 0xf0;
-#ifdef FHG_HEAAC_IN_A2DP
+#if FHG_HEAAC_IN_A2DP
 	chan = (cap >> 8) & 0x0f;
 #else
 	chan = (cap >> 8) & 0x0c;
@@ -635,14 +633,14 @@ static bool codec_aac_cfg(uint8_t losc, struct l2cap_frame *frame)
 
 	print_field("%*cBitrate: %ubps", BASE_INDENT, ' ', bitrate);
 	print_field("%*cVBR: %s", BASE_INDENT, ' ', vbr ? "Yes" : "No");
-#ifdef FHG_HEAAC_IN_A2DP
+#if FHG_HEAAC_IN_A2DP
 	print_field("%*cDRC: %s", BASE_INDENT, ' ', drc ? "Yes" : "No");
 #endif
 
 	return true;
 }
 
-#ifdef FHG_USAC_IN_A2DP
+#if FHG_USAC_IN_A2DP
 static bool codec_usac_cap(uint8_t losc, struct l2cap_frame *frame)
 {
 	uint16_t cap = 0;
@@ -1081,7 +1079,7 @@ bool a2dp_codec_cap(uint8_t codec, uint8_t losc, struct l2cap_frame *frame)
 		return codec_aac_cap(losc, frame);
 	case A2DP_CODEC_VENDOR:
 		return codec_vendor_cap(losc, frame);
-#ifdef FHG_USAC_IN_A2DP
+#if FHG_USAC_IN_A2DP
 	case A2DP_CODEC_MPEGD:
 		return codec_usac_cap(losc, frame);
 #endif
@@ -1103,7 +1101,7 @@ bool a2dp_codec_cfg(uint8_t codec, uint8_t losc, struct l2cap_frame *frame)
 		return codec_aac_cfg(losc, frame);
 	case A2DP_CODEC_VENDOR:
 		return codec_vendor_cfg(losc, frame);
-#ifdef FHG_USAC_IN_A2DP
+#if FHG_USAC_IN_A2DP
 	case A2DP_CODEC_MPEGD:
 		return codec_usac_cfg(losc, frame);
 #endif

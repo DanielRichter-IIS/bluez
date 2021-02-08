@@ -8,8 +8,6 @@
  *
  */
 
-#define FHG_USAC_IN_A2DP
-/*#define FHG_HEAAC_IN_A2DP*/
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -188,14 +186,14 @@ static const char *mediacodec2str(uint8_t codec)
 	case 0x01:
 		return "MPEG-1,2 Audio";
 	case 0x02:
-#ifdef FHG_HEAAC_IN_A2DP
+#if FHG_HEAAC_IN_A2DP
 		return "MPEG-2,4 AAC, HE-AAC, HE-AACv2";
 #else
 		return "MPEG-2,4 AAC";
 #endif
 	case 0x04:
 		return "ATRAC Family";
-#ifdef FHG_USAC_IN_A2DP
+#if FHG_USAC_IN_A2DP
 	case 0x08:
 		return "MPEG-D USAC";
 #endif

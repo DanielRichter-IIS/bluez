@@ -44,6 +44,9 @@ AM_CONDITIONAL(VALGRIND, test "${enable_valgrind}" = "yes")
 
 MISC_FLAGS
 
+AC_DEFINE([FHG_USAC_IN_A2DP], [0], [Set USAC development define to 1])
+AC_DEFINE([FHG_HEAAC_IN_A2DP], [0], [Set HEAAC development define to 1])
+
 AC_ARG_ENABLE(threads, AC_HELP_STRING([--enable-threads],
 		[enable threading support]), [enable_threads=${enableval}])
 
