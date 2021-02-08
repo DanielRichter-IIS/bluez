@@ -366,9 +366,7 @@ static void capabilities(int level, struct frame *frm)
 					printf("MPEG-4 HE-AAC ");
 				if (tmp & 0x04)
 					printf("MPEG-4 HE-AACv2 ");
-
-				if (tmp & 0x01)
-					printf("%s\n", tmp & 0x01 ? "DRC" : "");
+				printf("%s\n", tmp & 0x01 ? "DRC" : "");
 #endif
 				printf("\n");
 				tmp = p_get_u16(frm);
